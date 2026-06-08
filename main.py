@@ -44,3 +44,6 @@ app.include_router(advice_router)  # /advice/...
 @app.get("/")
 async def root():
     return {"message": "Hello"}
+
+
+#乐乐
