@@ -1,0 +1,13 @@
+fastapi==0.136.3
+uvicorn[standard]==0.49.0
+sqlalchemy[asyncio]==2.0.50
+aiomysql==0.3.2
+pydantic==2.13.4
+redis
+pymysql==1.1.0
+python-dotenv==1.0.0
+openai==1.6.1
+# httpx 0.28+ 移除了 proxies 参数，与 openai<1.12 不兼容
+httpx<0.28
+# MySQL 8.0 caching_sha2_password 认证需要
+cryptography

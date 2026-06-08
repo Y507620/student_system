@@ -1,0 +1,97 @@
+# ============================================================
+# Docker Compose 编排文件
+# ============================================================
+# 启动所有服务: docker compose up -d
+# 停止所有服务: docker compose down
+# 重新构建镜像: docker compose up -d --build
+# 查看日志:     docker compose logs -f app
+# ============================================================
+
+services:
+  # ==========================================================
+  # FastAPI 应用服务
+  # ==========================================================
+  app:
+    build: .
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"
+    environment:
+      # DeepSeek AI 配置
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      # MySQL 连接地址（指向下面的 mysql 服务）
+      - DATABASE_URL=mysql+aiomysql://root:${MYSQL_ROOT_PASSWORD:-root123456}@mysql:3306/student_db?charset=utf8mb4
+      # Redis 连接地址（指向下面的 redis 服务）
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      # 生产环境关闭 SQL 日志
+      - SQL_ECHO=false
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app_network
+
+  # ==========================================================
+  # MySQL 数据库服务
+  # ==========================================================
+  mysql:
+    image: mysql:8.0
+    container_name: fastapi_mysql
+    ports:
+      # 宿主机 3307 → 容器 3306（避免与本地 MySQL 冲突）
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root123456}
+      - MYSQL_DATABASE=student_db
+    volumes:
+      # 持久化数据，容器删除后数据不丢失
+      - mysql_data:/var/lib/mysql
+      # 首次启动时自动执行建库脚本（可选）
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root123456}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - app_network
+
+  # ==========================================================
+  # Redis 缓存服务
+  # ==========================================================
+  redis:
+    image: redis:7-alpine
+    container_name: fastapi_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - app_network
+
+# ============================================================
+# 命名卷 —— 数据持久化
+# ============================================================
+volumes:
+  mysql_data:
+  redis_data:
+
+# ============================================================
+# 自定义网络
+# ============================================================
+networks:
+  app_network:
+    driver: bridge

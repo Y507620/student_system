@@ -1,0 +1,23 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 敏感信息 - 绝对不能提交
+.env
+.env.*
+!env.example
+
+# 系统文件
+.DS_Store
+Thumbs.db

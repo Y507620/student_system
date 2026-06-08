@@ -1,0 +1,25 @@
+# Python 虚拟环境 (几百 MB, 不需要进镜像)
+.venv
+
+# Python 字节码缓存
+__pycache__
+*.pyc
+*.pyo
+
+# IDE 配置
+.vscode
+.idea
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+
+# Docker 相关
+Dockerfile
+.dockerignore
+
+# 环境变量文件 (不要打包进镜像)
+.env
+.env.*
